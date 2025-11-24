@@ -12,6 +12,7 @@ class MainScene extends Phaser.Scene {
         this.currentHp = 100;
         this.exp = 0;
         this.maxExp = 100; // EXP needed for next level
+        this.isLevelingUp = false;
 
         // Inventory: Array of active weapon instances
         this.inventory = [];
@@ -44,7 +45,7 @@ class MainScene extends Phaser.Scene {
         });
 
         // --- Spawner ---
-        this.time.addEvent({
+        this.spawner = this.time.addEvent({
             delay: 1500,
             callback: this.spawnEnemy,
             callbackScope: this,
@@ -203,6 +204,8 @@ class MainScene extends Phaser.Scene {
     }
 
     update(time, delta) {
+        if (this.isLevelingUp) return;
+
         // Weapon Firing Logic
         this.inventory.forEach(weapon => {
             if (time > weapon.lastFired + weapon.stats.fireRate) {
@@ -356,7 +359,10 @@ class MainScene extends Phaser.Scene {
         this.updateHUD();
 
         // Pause Game and Show Selection
-        this.scene.pause();
+        this.isLevelingUp = true;
+        this.physics.pause();
+        if (this.spawner) this.spawner.paused = true;
+
         this.showCardSelection();
     }
 
@@ -403,7 +409,11 @@ class MainScene extends Phaser.Scene {
                 const weaponKey = Object.keys(WEAPONS).find(key => WEAPONS[key] === opt);
                 this.addWeapon(weaponKey);
                 container.destroy();
-                this.scene.resume();
+
+                // Resume Game
+                this.isLevelingUp = false;
+                this.physics.resume();
+                if (this.spawner) this.spawner.paused = false;
             });
 
             // Hover effect
