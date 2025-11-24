@@ -78,8 +78,14 @@ class MainScene extends Phaser.Scene {
         this.hpText = this.add.text(20, 50, `HP: ${this.currentHp}/${this.maxHp}`, { fontSize: '20px', color: '#ff0000' });
         this.uiGroup.add(this.hpText);
 
-        this.expText = this.add.text(20, 80, `EXP: ${this.exp}/${this.maxExp}`, { fontSize: '20px', color: '#ffff00' });
-        this.uiGroup.add(this.expText);
+        // EXP Bar
+        this.expBarBg = this.add.rectangle(20, 80, 200, 10, 0x333333).setOrigin(0, 0);
+        this.expBarFill = this.add.rectangle(20, 80, 0, 10, 0xffff00).setOrigin(0, 0);
+        this.uiGroup.add(this.expBarBg);
+        this.uiGroup.add(this.expBarFill);
+
+        // Add neon glow to exp bar
+        this.expBarFill.postFX.addGlow(0xffff00, 2, 0.5);
 
         // 2. Weapon Grid (3x2) - Visuals only for now, updated by renderWeaponGrid
         this.weaponContainer = this.add.container(20, 120);
@@ -338,7 +344,10 @@ class MainScene extends Phaser.Scene {
     updateHUD() {
         this.levelText.setText(`LVL: ${this.level}`);
         this.hpText.setText(`HP: ${this.currentHp}/${this.maxHp}`);
-        this.expText.setText(`EXP: ${this.exp}/${this.maxExp}`);
+
+        // Update EXP Bar width
+        const percentage = Math.min(this.exp / this.maxExp, 1);
+        this.expBarFill.width = 200 * percentage;
     }
 
     levelUp() {
